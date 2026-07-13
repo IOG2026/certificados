@@ -1,29 +1,8 @@
-import Database from "better-sqlite3";
+import { createClient } from "@libsql/client";
 
-const db = new Database("ioverify.db");
-
-db.exec(`
-CREATE TABLE IF NOT EXISTS certificados (
-
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-  codigo TEXT UNIQUE,
-
-  rut TEXT,
-
-  nombres TEXT,
-
-  apellidos TEXT,
-
-  curso TEXT,
-
-  fecha TEXT,
-
-  horas INTEGER,
-
-  nota REAL
-
-);
-`);
+const db = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN!,
+});
 
 export default db;

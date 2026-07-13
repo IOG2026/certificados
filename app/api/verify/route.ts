@@ -5,9 +5,8 @@ export async function POST(req: Request) {
   try {
     const { codigo } = await req.json();
 
-    const certificado = db
-      .prepare(
-        `
+    const resultado = await db.execute({
+      sql: `
         SELECT
           codigo,
           nombres,
@@ -18,11 +17,11 @@ export async function POST(req: Request) {
           nota
         FROM certificados
         WHERE UPPER(codigo) = UPPER(?)
-      `
-      )
-      .get(codigo);
+      `,
+      args: [codigo],
+    });
 
-    if (!certificado) {
+    if (resultado.rows.length === 0) {
       return NextResponse.json({
         valido: false,
         mensaje: "Certificado no encontrado.",
@@ -31,8 +30,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       valido: true,
-      certificado,
+      certificado: resultado.rows[0],
     });
+
   } catch (error) {
     console.error(error);
 

@@ -58,65 +58,56 @@ export async function POST(req: NextRequest) {
 
     const datos = XLSX.utils.sheet_to_json<any>(hoja);
 
-    // Consulta si el código ya existe
-    const buscar = db.prepare(`
-      SELECT id
-      FROM certificados
-      WHERE codigo = ?
-    `);
-
-    // Inserta solamente certificados nuevos
-    const insertar = db.prepare(`
-      INSERT INTO certificados
-      (
-        codigo,
-        rut,
-        nombres,
-        apellidos,
-        curso,
-        fecha,
-        horas,
-        nota
-      )
-      VALUES
-      (
-        @codigo,
-        @rut,
-        @nombres,
-        @apellidos,
-        @curso,
-        @fecha,
-        @horas,
-        @nota
-      )
-    `);
-
     let importados = 0;
     let duplicados = 0;
-
     const codigosDuplicados: string[] = [];
 
     for (const fila of datos) {
 
       if (!fila.codigo) continue;
 
-      const existe = buscar.get(fila.codigo);
+      // Buscar si ya existe
+      const existe = await db.execute({
+        sql: `
+          SELECT id
+          FROM certificados
+          WHERE codigo = ?
+        `,
+        args: [fila.codigo],
+      });
 
-      if (existe) {
+      if (existe.rows.length > 0) {
         duplicados++;
-        codigosDuplicados.push(fila.codigo);
+        codigosDuplicados.push(String(fila.codigo));
         continue;
       }
 
-      insertar.run({
-        codigo: fila.codigo,
-        rut: fila.rut,
-        nombres: fila.nombres,
-        apellidos: fila.apellidos,
-        curso: fila.curso,
-        fecha: convertirFecha(fila.fecha),
-        horas: Number(fila.horas),
-        nota: Number(fila.nota),
+      // Insertar
+      await db.execute({
+        sql: `
+          INSERT INTO certificados
+          (
+            codigo,
+            rut,
+            nombres,
+            apellidos,
+            curso,
+            fecha,
+            horas,
+            nota
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        args: [
+          String(fila.codigo),
+          String(fila.rut ?? ""),
+          String(fila.nombres ?? ""),
+          String(fila.apellidos ?? ""),
+          String(fila.curso ?? ""),
+          convertirFecha(fila.fecha),
+          Number(fila.horas ?? 0),
+          Number(fila.nota ?? 0),
+        ],
       });
 
       importados++;
