@@ -1,65 +1,247 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 
 export default function Home() {
+  const [codigo, setCodigo] = useState("");
+  const [resultado, setResultado] = useState<any>(null);
+  const [cargando, setCargando] = useState(false);
+
+  async function verificar() {
+    if (!codigo.trim()) {
+      alert("Ingrese un código.");
+      return;
+    }
+
+    setCargando(true);
+
+    try {
+      const respuesta = await fetch("/api/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          codigo,
+        }),
+      });
+
+      const data = await respuesta.json();
+
+      setResultado(data);
+    } catch (error) {
+      console.error(error);
+
+      setResultado({
+        valido: false,
+        mensaje: "Error de conexión con el servidor.",
+      });
+    }
+
+    setCargando(false);
+  }
+
+  function formatearFecha(fecha: any) {
+    if (!fecha) return "";
+
+    // Si viene como número de Excel
+    if (!isNaN(Number(fecha))) {
+      const excelDate = Number(fecha);
+      const jsDate = new Date((excelDate - 25569) * 86400 * 1000);
+
+      return jsDate.toLocaleDateString("es-CL");
+    }
+
+    return fecha;
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "#eef3f9",
+        fontFamily: "Arial, Helvetica, sans-serif",
+        padding: 30,
+      }}
+    >
+      <div
+        style={{
+          width: 500,
+          background: "#fff",
+          borderRadius: 28,
+          padding: 40,
+          boxShadow: "0 18px 45px rgba(0,0,0,.12)",
+          textAlign: "center",
+        }}
+      >
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
+          src="/images/iogroup.png"
+          alt="IO Group"
+          width={350}
+          height={97}
           priority
+          style={{
+            width: "280px",
+            height: "auto",
+            margin: "0 auto 20px",
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <Image
+          src="/images/verify.png"
+          alt="Verify"
+          width={220}
+          height={199}
+          priority
+          style={{
+            width: "160px",
+            height: "auto",
+            margin: "0 auto 24px",
+          }}
+        />
+
+        <h2
+          style={{
+            color: "#f7931e",
+            fontSize: 22,
+            marginBottom: 28,
+          }}
+        >
+          Verificación de certificados digitales
+        </h2>
+
+        <input
+          type="text"
+          value={codigo}
+          onChange={(e) => setCodigo(e.target.value)}
+          placeholder="Ingrese el código del certificado"
+          style={{
+            width: "100%",
+            padding: 18,
+            borderRadius: 12,
+            border: "1px solid #d8dce5",
+            fontSize: 18,
+            boxSizing: "border-box",
+          }}
+        />
+
+        <button
+          onClick={verificar}
+          disabled={cargando}
+          style={{
+            width: "100%",
+            marginTop: 18,
+            padding: 18,
+            borderRadius: 12,
+            border: "none",
+            background: "#f7931e",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 20,
+            cursor: cargando ? "default" : "pointer",
+          }}
+        >
+          {cargando ? "Verificando..." : "Verificar certificado"}
+        </button>
+
+        {resultado && (
+          <div
+            style={{
+              marginTop: 30,
+              padding: 22,
+              borderRadius: 14,
+              background: resultado.valido ? "#edf9ef" : "#fff2f2",
+              border: resultado.valido
+                ? "1px solid #b7dfc0"
+                : "1px solid #efb2b2",
+              textAlign: "left",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {resultado.valido ? (
+              <>
+                <h3
+                  style={{
+                    color: "#0b8f3c",
+                    marginTop: 0,
+                  }}
+                >
+                  ✅ Certificado válido
+                </h3>
+
+                <p>
+                  <b>Alumno:</b>{" "}
+                  {resultado.certificado.nombres}{" "}
+                  {resultado.certificado.apellidos}
+                </p>
+
+                <p>
+                  <b>Curso:</b> {resultado.certificado.curso}
+                </p>
+
+                <p>
+                  <b>Fecha:</b>{" "}
+                  {formatearFecha(resultado.certificado.fecha)}
+                </p>
+
+                <p>
+                  <b>Horas:</b> {resultado.certificado.horas}
+                </p>
+
+                <p>
+                  <b>Nota Final:</b> {resultado.certificado.nota}
+                </p>
+
+                <p>
+                  <b>Código:</b> {resultado.certificado.codigo}
+                </p>
+              </>
+            ) : (
+              <>
+                <h3
+                  style={{
+                    color: "#c62828",
+                    marginTop: 0,
+                  }}
+                >
+                  ❌ Certificado no encontrado
+                </h3>
+
+                <p>{resultado.mensaje}</p>
+              </>
+            )}
+          </div>
+        )}
+
+        <div
+          style={{
+            marginTop: 28,
+            padding: 18,
+            background: "#f7f8fb",
+            borderRadius: 12,
+            border: "1px solid #dfe5ef",
+            color: "#5d6b82",
+            lineHeight: 1.6,
+          }}
+        >
+          Escanee el código QR impreso en su diploma
+          <br />
+          o ingrese el código manualmente.
         </div>
-      </main>
-    </div>
+
+        <div
+          style={{
+            marginTop: 24,
+            color: "#98a4b7",
+            fontSize: 14,
+          }}
+        >
+          © 2026 IO Group Chile
+        </div>
+      </div>
+    </main>
   );
 }
