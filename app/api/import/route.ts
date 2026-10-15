@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import db from "@/lib/database";
@@ -63,7 +64,6 @@ export async function POST(req: NextRequest) {
     const codigosDuplicados: string[] = [];
 
     for (const fila of datos) {
-
       if (!fila.codigo) continue;
 
       // Buscar si ya existe
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
           String(fila.curso ?? ""),
           convertirFecha(fila.fecha),
           Number(fila.horas ?? 0),
-          Number(fila.nota ?? 0),
+          String(fila.nota ?? ""),
         ],
       });
 
@@ -119,9 +119,7 @@ export async function POST(req: NextRequest) {
       duplicados,
       codigosDuplicados,
     });
-
   } catch (error) {
-
     console.error(error);
 
     return NextResponse.json(
@@ -133,6 +131,5 @@ export async function POST(req: NextRequest) {
         status: 500,
       }
     );
-
   }
 }
