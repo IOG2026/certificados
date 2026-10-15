@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import db from "@/lib/database";
+import { currentUser, json, sameOrigin } from "@/lib/auth/server";
 
 function convertirFecha(valor: any): string {
   if (!valor) return "";
@@ -33,6 +34,8 @@ function convertirFecha(valor: any): string {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!sameOrigin(req)) return json({ ok: false, error: "Solicitud no permitida." }, 403);
+    if (!(await currentUser())) return json({ ok: false, error: "Inicia sesión para importar certificados." }, 401);
     const formData = await req.formData();
 
     const archivo = formData.get("file") as File;

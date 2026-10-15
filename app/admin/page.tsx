@@ -1,101 +1,27 @@
 "use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-
+import Link from "next/link";
 export default function AdminLogin() {
-  const [usuario, setUsuario] = useState("");
-  const [password, setPassword] = useState("");
-
-  const router = useRouter();
-
-  function ingresar() {
-    if (usuario === "admin" && password === "iogroup") {
-      router.push("/admin/dashboard");
-    } else {
-      alert("Usuario o contraseña incorrectos.");
-    }
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function login(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setError(""); setBusy(true);
+    const form = new FormData(event.currentTarget);
+    try {
+      const response = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: form.get("email"), password: form.get("password") }) });
+      const data = await response.json();
+      if (!response.ok) { setError(data.error || "No se pudo iniciar sesión."); setBusy(false); return; }
+      window.location.assign("/admin/dashboard");
+    } catch { setError("No fue posible conectar. Intenta nuevamente."); setBusy(false); }
   }
-
-  return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#eef3f9",
-        fontFamily: "Arial, Helvetica, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          width: 420,
-          background: "#ffffff",
-          padding: 40,
-          borderRadius: 20,
-          boxShadow: "0 15px 40px rgba(0,0,0,.12)",
-        }}
-      >
-        <h1
-          style={{
-            textAlign: "center",
-            color: "#f7931e",
-            marginBottom: 35,
-          }}
-        >
-          Administración IO Verify
-        </h1>
-
-        <input
-          type="text"
-          placeholder="Usuario"
-          value={usuario}
-          onChange={(e) => setUsuario(e.target.value)}
-          style={{
-            width: "100%",
-            padding: 16,
-            marginBottom: 18,
-            borderRadius: 10,
-            border: "1px solid #d8dce5",
-            boxSizing: "border-box",
-            fontSize: 16,
-          }}
-        />
-
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{
-            width: "100%",
-            padding: 16,
-            marginBottom: 25,
-            borderRadius: 10,
-            border: "1px solid #d8dce5",
-            boxSizing: "border-box",
-            fontSize: 16,
-          }}
-        />
-
-        <button
-          onClick={ingresar}
-          style={{
-            width: "100%",
-            padding: 16,
-            border: "none",
-            borderRadius: 10,
-            background: "#f7931e",
-            color: "#ffffff",
-            fontSize: 18,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          Ingresar
-        </button>
-      </div>
-    </main>
-  );
+  return <main className="io-admin"><section className="card login">
+    <h1>Administración IO Verify</h1><p>Ingresa con tu correo y contraseña.</p>
+    <form onSubmit={login}>
+      <label htmlFor="email">Correo electrónico</label><input id="email" name="email" type="email" autoComplete="username" required maxLength={254} />
+      <label htmlFor="password">Contraseña</label><input id="password" name="password" type="password" autoComplete="current-password" required maxLength={128} />
+      {error && <p role="alert" className="message error">{error}</p>}
+      <button disabled={busy} type="submit" style={{ width: "100%" }}>{busy ? "Ingresando…" : "Ingresar"}</button>
+    </form><p style={{ fontSize: 14 }}>Si necesitas restablecer tu contraseña, contacta al administrador.</p>
+    <Link href="/">Volver al verificador público</Link>
+  </section></main>;
 }
