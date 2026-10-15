@@ -1,0 +1,18 @@
+.io-admin { min-height: 100vh; background: #eef3f9; color: #222; font-family: Arial, Helvetica, sans-serif; padding: 40px 20px; }
+.io-admin .card { max-width: 960px; margin: 0 auto; padding: 32px; border-radius: 18px; background: white; box-shadow: 0 10px 30px #00000010; }
+.io-admin .login { max-width: 460px; margin: 8vh auto; }
+.io-admin h1 { font-size: 27px; font-weight: 700; color: #d77400; margin-bottom: 18px; }
+.io-admin h2 { font-size: 20px; font-weight: 700; margin: 28px 0 16px; }
+.io-admin p { margin: 12px 0; }
+.io-admin label { display: block; font-weight: 600; margin: 18px 0 6px; }
+.io-admin input { width: 100%; padding: 12px; border: 1px solid #bbc3ce; border-radius: 8px; color: #222; background: white; }
+.io-admin input:focus-visible, .io-admin button:focus-visible { outline: 3px solid #f7931e; outline-offset: 3px; }
+.io-admin button, .io-admin .primary { display: inline-block; padding: 12px 20px; margin-top: 18px; border-radius: 8px; background: #f7931e; color: #171717; font-weight: 700; cursor: pointer; }
+.io-admin button:disabled { opacity: .5; cursor: wait; }
+.io-admin .secondary { background: #edf0f4; }
+.io-admin .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.io-admin .message { padding: 12px; border: 1px solid #c3cbd6; border-radius: 8px; }
+.io-admin .error { color: #a01616; }
+.io-admin table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.io-admin th, .io-admin td { text-align: left; padding: 14px 8px; border-bottom: 1px solid #ddd; }
+.io-admin td button { margin: 0 8px 6px 0; font-size: 14px; }
